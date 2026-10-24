@@ -510,25 +510,32 @@ function generateCodexAuthJson(session) {
     finalIdToken = `${base64UrlEncodeObject(jwtHeader)}.${base64UrlEncodeObject(jwtPayload)}.synthetic`;
   }
 
-  const finalRefreshToken =
-    session.refreshToken ||
-    session.sessionToken ||
-    'session_based_no_oauth_rt';
+  const isRealOAuthRt = Boolean(
+    session.hasRealOAuthRefreshToken &&
+    session.refreshToken &&
+    !String(session.refreshToken).startsWith('eyJhbGciOiJkaXIi')
+  );
+
+  const tokensObj = {
+    id_token: finalIdToken,
+    access_token: session.accessToken,
+    refresh_token: isRealOAuthRt ? session.refreshToken : '',
+    ...(isRealOAuthRt
+      ? {
+          oauth_provenance: {
+            issuer: OPENAI_ISSUER,
+            client_id: CODEX_CLIENT_ID
+          },
+          login_owner_id: session.loginOwnerId || generateRandomBase64Url(32)
+        }
+      : {}),
+    account_id: identity.accountId || null
+  };
 
   const authConfig = {
-    auth_mode: 'chatgpt',
+    auth_mode: isRealOAuthRt ? 'chatgpt' : 'chatgptAuthTokens',
     OPENAI_API_KEY: null,
-    tokens: {
-      id_token: finalIdToken,
-      access_token: session.accessToken,
-      refresh_token: finalRefreshToken,
-      oauth_provenance: {
-        issuer: OPENAI_ISSUER,
-        client_id: CODEX_CLIENT_ID
-      },
-      login_owner_id: session.loginOwnerId || generateRandomBase64Url(32),
-      account_id: identity.accountId || null
-    },
+    tokens: tokensObj,
     last_refresh: session.lastRefresh || new Date().toISOString()
   };
 

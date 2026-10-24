@@ -82,7 +82,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // 2. 监听 OAuth PKCE 回调 URL (免本地 1455 端口服务器)
 // ==========================================
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  const targetUrl = changeInfo.url || tab?.url || '';
+  const targetUrl = changeInfo.url || tab?.pendingUrl || tab?.url || '';
   if (
     targetUrl.startsWith('http://localhost:1455/auth/callback') ||
     targetUrl.startsWith('http://127.0.0.1:1455/auth/callback')
@@ -763,7 +763,7 @@ async function fetchChatGPTSession({ forceRefresh = false } = {}) {
       ...session,
       accessToken: session.accessToken,
       idToken: '',
-      refreshToken: session.sessionToken || '',
+      refreshToken: '',
       sessionToken: session.sessionToken || '',
       hasRealOAuthRefreshToken: false,
       loginOwnerId: existingLoginOwnerId,
@@ -840,18 +840,28 @@ function buildStandardAuthJsonFromOAuthRecord(record) {
     finalIdToken = `${base64UrlEncodeObject(jwtHeader)}.${base64UrlEncodeObject(jwtPayload)}.synthetic`;
   }
 
+  const isRealOAuthRt = Boolean(
+    record.hasRealOAuthRefreshToken &&
+    record.refreshToken &&
+    !String(record.refreshToken).startsWith('eyJhbGciOiJkaXIi')
+  );
+
   const authConfig = {
-    auth_mode: 'chatgpt',
+    auth_mode: isRealOAuthRt ? 'chatgpt' : 'chatgptAuthTokens',
     OPENAI_API_KEY: null,
     tokens: {
       id_token: finalIdToken,
       access_token: record.accessToken,
-      refresh_token: record.refreshToken || 'session_based_no_oauth_rt',
-      oauth_provenance: {
-        issuer: OPENAI_ISSUER,
-        client_id: CODEX_CLIENT_ID
-      },
-      login_owner_id: record.loginOwnerId || generateRandomBase64Url(32),
+      refresh_token: isRealOAuthRt ? record.refreshToken : '',
+      ...(isRealOAuthRt
+        ? {
+            oauth_provenance: {
+              issuer: OPENAI_ISSUER,
+              client_id: CODEX_CLIENT_ID
+            },
+            login_owner_id: record.loginOwnerId || generateRandomBase64Url(32)
+          }
+        : {}),
       account_id: identity.accountId || null
     },
     last_refresh: record.lastRefresh || new Date().toISOString()
