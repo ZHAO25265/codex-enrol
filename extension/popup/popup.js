@@ -533,7 +533,7 @@ function generateCodexAuthJson(session) {
   };
 
   const authConfig = {
-    auth_mode: isRealOAuthRt ? 'chatgpt' : 'chatgptAuthTokens',
+    auth_mode: 'chatgpt',
     OPENAI_API_KEY: null,
     tokens: tokensObj,
     last_refresh: session.lastRefresh || new Date().toISOString()

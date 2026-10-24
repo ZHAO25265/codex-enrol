@@ -847,7 +847,7 @@ function buildStandardAuthJsonFromOAuthRecord(record) {
   );
 
   const authConfig = {
-    auth_mode: isRealOAuthRt ? 'chatgpt' : 'chatgptAuthTokens',
+    auth_mode: 'chatgpt',
     OPENAI_API_KEY: null,
     tokens: {
       id_token: finalIdToken,
