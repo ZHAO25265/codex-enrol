@@ -98,14 +98,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCopyText = document.getElementById('btn-copy-text');
   const btnDownload = document.getElementById('btn-mock-download');
   
-  // 模拟数据源
+  // 模拟数据源（对齐真实 Codex auth.json 结构）
   const mockJsonData = `{
-  "session_token": "eyJhY2Nlc3NfdG9rZW4iOiJleUpoYkdjaU9pSlNVekkxSWl3aWRIbHdaU0k2SWpJa...",
-  "user_id": "user-8f9x2c4v1b0q7w9e",
-  "user_tier": "chatgpt_plus_tier",
-  "expires_at": "2026-06-25T02:39:11Z",
-  "generated_by": "Codex Auth Helper (v1.0.0)",
-  "status": "active_session_verified"
+  "auth_mode": "chatgpt",
+  "OPENAI_API_KEY": null,
+  "tokens": {
+    "id_token": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIiwiY3BhX3N5bnRoZXRpYyI6dHJ1ZX0...",
+    "access_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjE5YzAxYTMxL...",
+    "refresh_token": "rt_8f9x2c4v1b0q7w9e_oauth_refresh_token...",
+    "oauth_provenance": {
+      "issuer": "https://auth.openai.com",
+      "client_id": "app_EMoamEEZ73f0CkXaXp7hrann"
+    },
+    "login_owner_id": "k9Xm2vL8pQ4wR7zN1cB5yF3hJ6dG0sA2eU8iO4rT6vY",
+    "account_id": "fe81a2c4-90b1-4d2e-8a1f-7c3b5e9d0a12"
+  },
+  "last_refresh": "2026-10-24T11:30:00.000Z"
 }`;
 
   const mockLogData = `[INFO] [10:39:11] 初始化 Codex 登陆助手后台解析进程...
